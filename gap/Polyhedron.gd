@@ -64,21 +64,6 @@ DeclareOperation( "Polyhedron",
 #####################################
 
 #! @Section Attributes
-
-#! @Arguments P
-#! @Returns cdd Object
-#! @Description  
-#! Converts the polyhedron to a cdd object. The operations of CddInterface can then be applied
-#! on this convex object.
-DeclareAttribute( "ExternalCddPolyhedron",
-                   IsPolyhedron );
-#! @Arguments P
-#! @Returns normaliz Object
-#! @Description  
-#! Converts the polyhedron to an normaliz object. The operations of NormalizInterface can then be applied
-#! on this convex object.
-DeclareAttribute( "ExternalNmzPolyhedron",
-                   IsPolyhedron );
                    
 #! @Arguments P
 #! @Returns a list
@@ -181,8 +166,7 @@ DeclareProperty( "IsPointed",
 #! @InsertChunk example3
 
 #! @Section Solving Linear programs
-#! The problem of solving linear programs can be solved in the gap package
-#! <C>CddInterface</C>, which is required by <C>NConvex</C>.
+#! The problem of solving linear programs can be solved using the &GAP; package <C>CddInterface</C>.
 
 #! @Arguments P, max_or_min, target_func
 #! @Returns a list or fail

@@ -44,14 +44,6 @@ DeclareOperation( "Polytope",
 #! @Section Attributes
 
 #! @Arguments P 
-#! @Returns a CddPolyhedron
-#! @Description  
-#! Converts the polytope to a CddPolyhedron. The operations of CddInterface can then be applied
-#! on this polyhedron.
-DeclareAttribute( "ExternalCddPolytope",
-                    IsPolytope );
-
-#! @Arguments P 
 #! @Returns a List
 #! @Description  
 #! The operation returns the list of integer points inside the polytope.                    

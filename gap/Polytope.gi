@@ -56,29 +56,6 @@ BindGlobal( "TheTypeInternalPolytope",
 ####################################
 
 ##
-InstallMethod( IsEmpty,
-               "for polytopes",
-               [ IsPolytope ],
-               
-  function( polytope )
-    
-    if IsBound( polytope!.input_points ) and Length( polytope!.input_points ) > 0 then
-        
-        return false;
-        
-    elif IsBound( polytope!.input_points ) and Length( polytope!.input_points ) = 0 then
-    
-        return true;
-    
-    else 
-    
-       return Cdd_IsEmpty( ExternalCddPolytope( polytope ) );
-       
-    fi;
-    
-end );
-
-##
 InstallMethod( IsNotEmpty,
                 " for polytopes.",
                 [ IsPolytope ],
@@ -233,13 +210,6 @@ InstallMethod( IsSimplexPolytope,
 end );
 
 ##
-InstallMethod( InteriorPoint,
-                [ IsConvexObject and IsPolytope ],
-    function( poly )
-    return Cdd_InteriorPoint( ExternalCddPolytope( poly ) );
-end );
-
-##
 InstallMethod( IsSimplicial,
                [ IsPolytope ],
                
@@ -263,17 +233,6 @@ InstallMethod( IsSimplicial,
                   
                          end );
                   
-end );
-  
-##
-InstallMethod( IsBounded,
-               " for external polytopes.",
-               [ IsPolytope ],
-               
-  function( polytope )
-
-  return Length( Cdd_GeneratingRays( ExternalCddPolytope( polytope ) ) ) = 0;
-  
 end );
 
 ##
@@ -469,62 +428,6 @@ end );
 ####################################
 
 ##
-InstallMethod( ExternalCddPolytope, 
-               "for polytopes", 
-               [ IsPolytope ],
-               
-   function( polyt )
-   local old_pointlist, new_pointlist, ineqs, i,j;
-   
-   if IsBound( polyt!.input_points ) and IsBound( polyt!.input_ineqs ) then
-        
-        Error( "points and inequalities at the same time are not supported\n" );
-        
-   fi;
-    
-   if IsBound( polyt!.input_points ) then 
-   
-       old_pointlist := polyt!.input_points;
-       
-       new_pointlist:= [ ];
-       
-       for i in old_pointlist do 
-           
-           j:= ShallowCopy( i );
-           
-           Add( j, 1, 1 );
-           
-           Add( new_pointlist, j );
-           
-       od;
-           
-       return Cdd_PolyhedronByGenerators( new_pointlist );
-       
-   elif  IsBound( polyt!.input_ineqs ) then
-    
-      ineqs := ShallowCopy( polyt!.input_ineqs );
-      
-      return Cdd_PolyhedronByInequalities( ineqs );
-      
-   else 
-   
-       Error( "something went wrong\n" );
-       
-   fi;
-   
-end );
-
-##
-InstallMethod( Dimension, 
-               "for polytopes",
-               [ IsPolytope ],
-function( polytope )
-
-return Cdd_Dimension( ExternalCddPolytope( polytope ) );
-end );
-
-
-##
 InstallMethod( LatticePointsGenerators,
                "for polytopes",
                [ IsPolytope ],
@@ -661,18 +564,6 @@ InstallMethod( RelativeInteriorLatticePoints,
     
 end );
 
-
-##
-InstallMethod( VerticesOfPolytope,
-               "for polytopes",
-               [ IsPolytope ],
-               
-  function( polyt )
-    
-    return Cdd_GeneratingVertices( ExternalCddPolytope( polyt ) );
-    
-end );
-
 ##
 InstallMethod( Vertices,
                "for compatibility",
@@ -690,28 +581,6 @@ InstallMethod( HasVertices,
   HasVerticesOfPolytope
   
 );
-
-##
-InstallMethod( FacetInequalities,
-               " for external polytopes",
-               [ IsExternalPolytopeRep ],
-               
-  function( polyt )
-    
-    return Cdd_Inequalities( ExternalCddPolytope( polyt ) );
-    
-end );
-
-##
-InstallMethod( EqualitiesOfPolytope,
-               "for external polytopes",
-               [ IsPolytope ],
-               
-  function( polyt )
-    
-    return Cdd_Equalities( ExternalCddPolytope( polyt ) );
-    
-end );
 
 ##
 InstallMethod( DefiningInequalities,
@@ -906,22 +775,6 @@ end );
 ##
 InstallMethod( DualPolytope, [ IsPolytope ], PolarPolytope );
 
-##
-InstallMethod( FVector,
-        "for polytopes",
-        [ IsPolytope ],
-    function( polyt )
-      local external_polytope, faces;
-      
-      external_polytope := Cdd_H_Rep( ExternalCddPolytope( polyt ) );
-      
-      faces := Cdd_Faces( external_polytope );
-      
-      return List( [ 0 .. Dimension( polyt ) - 1 ], 
-                i -> Length( PositionsProperty( faces, face -> face[ 1 ] = i ) ) );
-
-end );
-
 ####################################
 ##
 ## Constructors
@@ -1111,34 +964,6 @@ InstallMethod( FreeSumOfPolytopes,
 
       return P;
 
-end );
-
-##
-InstallMethod( IntersectionOfPolytopes,
-               "for homalg cones",
-               [ IsPolytope, IsPolytope ],
-               
-  function( polyt1, polyt2 )
-    local polyt, ext_polytope;
-    
-    if not Rank( ContainingGrid( polyt1 ) ) = Rank( ContainingGrid( polyt2 ) ) then
-        
-        Error( "polytopes are not of the same dimension" );
-        
-    fi;
-    
-    ext_polytope:= Cdd_Intersection( ExternalCddPolytope( polyt1), ExternalCddPolytope( polyt2) ); 
-    
-    polyt := Polytope( Cdd_GeneratingVertices( ext_polytope) );
-    
-    SetExternalCddPolytope( polyt, ext_polytope );
-    
-    SetContainingGrid( polyt, ContainingGrid( polyt1 ) );
-    
-    SetAmbientSpaceDimension( polyt, AmbientSpaceDimension( polyt1 ) );
-    
-    return polyt;
-    
 end );
 
 ##

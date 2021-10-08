@@ -52,31 +52,6 @@ BindGlobal( "TheTypeInternalCone",
 #####################################
 
 ##
-InstallMethod( IsPointed,
-                "for homalg cones.",
-                [ IsCone ],
-                
-   function( cone )
-     
-     return Cdd_IsPointed( ExternalCddCone ( cone ) );
-     
-end );
-
-##
-InstallMethod( InteriorPoint,
-                [ IsConvexObject and IsCone ],
-    function( cone )
-    local point, denominators;
-    point := Cdd_InteriorPoint( ExternalCddCone( cone ) );
-    denominators := List( point, DenominatorRat );
-    if DuplicateFreeList( denominators ) = [ 1 ] then
-        return point;
-    else
-        return Lcm( denominators )*point;
-    fi;
-end );
-
-##
 InstallMethod( IsComplete,
                " for cones",
                [ IsCone ],
@@ -186,23 +161,6 @@ end );
 ##
 #####################################
 
-InstallMethod( RayGenerators,
-               [ IsCone ],
-               
-  function( cone )
-#   local nmz_cone, l, r;
-  
-   return Cdd_GeneratingRays( ExternalCddCone( cone ) );
-  
-#   nmz_cone := ExternalNmzCone( cone );
-  
-#   r := NmzGenerators( nmz_cone );
-  
-#   l := NmzMaximalSubspace( nmz_cone );
-  
-#   return Concatenation( r, l, -l );
-
-  end );
 
 ##
 InstallMethod( DualCone,
@@ -227,40 +185,6 @@ InstallMethod( DualCone,
 end );
 
 ##
-InstallMethod( DefiningInequalities,
-               [ IsCone ],
-               
-  function( cone )
-  local inequalities, new_inequalities, equalities, i, u; 
-  
-  inequalities:= ShallowCopy( Cdd_Inequalities( ExternalCddCone( cone ) ) );
-  
-  equalities:= ShallowCopy( Cdd_Equalities( ExternalCddCone( cone ) ) );
-  
-  for i in equalities do 
-  
-       Append( inequalities, [ i,-i ] );
-       
-  od;
-    
-new_inequalities:= [ ];
-    
-  for i in inequalities do 
-  
-       u:= ShallowCopy( i );
-       
-       Remove( u , 1 );
-       
-       Add(new_inequalities, u );
-       
-  od;
-  
-  return new_inequalities; 
-    
-end );
-
-
-##
 InstallMethod( FactorConeEmbedding,
                "for cones",
                [ IsCone ],
@@ -269,32 +193,6 @@ InstallMethod( FactorConeEmbedding,
     
     return TheIdentityMorphism( ContainingGrid( cone ) );
     
-end );
-
-##
-InstallMethod( EqualitiesOfCone,
-               "for external Cone",
-               [ IsCone ],
-               
-  function( cone )
-  local equalities, new_equalities, u, i;
-  
-    equalities:= Cdd_Equalities( ExternalCddCone( cone ) );
-    
-    new_equalities:= [ ];
-    
-  for i in equalities do 
-  
-       u:= ShallowCopy( i );
-       
-       Remove( u , 1 );
-       
-       Add(new_equalities, u );
-       
-  od;
-  
-  return new_equalities;
-
 end );
 
 ##
@@ -455,139 +353,6 @@ InstallMethod( Dimension,
 end );
 
 ##
-InstallMethod( Dimension, 
-               "for cones",
-               [ IsCone ],
-  function( cone )
- 
-  return Cdd_Dimension( ExternalCddCone( cone ) );
-  
-end );
-
-##
-InstallMethod( HilbertBasis,
-               "for cones",
-               [ IsCone ],
-               
-  function( cone )
-    local ineq, const;
-
-    if not IsPointed( cone ) then
-        
-        Error( "Hilbert basis for not-pointed cones is not yet implemented, you can use the command 'LatticePointsGenerators' " );
-        
-    fi;
-
-
-    if IsPackageMarkedForLoading( "NormalizInterface", ">=1.1.0" ) then
-
-      return Set( ValueGlobal( "NmzHilbertBasis" )( ExternalNmzCone( cone ) ) );
-    
-    elif IsPackageMarkedForLoading( "4ti2Interface", ">=2018.07.06" ) then
-      
-      ineq := DefiningInequalities( cone );
-
-      const := ListWithIdenticalEntries( Length( ineq ), 0 );
-
-      return Set( ValueGlobal( "4ti2Interface_zsolve_equalities_and_inequalities" )( [  ], [  ], ineq, const )[ 2 ]: precision := "gmp" );
-
-    else
-
-      Error( "4ti2Interface or NormalizInterface should be loaded!" );
-
-    fi;
-  
-end );
-
-##
-InstallMethod( RaysInFacets,
-               " for cones",
-               [ IsCone ],
-               
-  function( cone )
-  local external_cone, list_of_facets, generating_rays, list, current_cone, current_list, current_ray_generators, i;  
-  
-    external_cone := Cdd_H_Rep ( ExternalCddCone ( cone ) );
-    
-    list_of_facets:= Cdd_Facets( external_cone );
-    
-    generating_rays:= RayGenerators( cone );
-    
-    list:= [ ];
-    
-    for i in list_of_facets do
-    
-      current_cone := Cdd_ExtendLinearity( external_cone, i );
-      
-      current_ray_generators := Cdd_GeneratingRays( current_cone ) ;
-      
-      current_list:= List( [1..Length( generating_rays )], 
-                           
-                           function(j)
-
-                             if generating_rays[j] in Cone( current_cone ) then
-                                return 1;
-                             else 
-                                return 0;
-                             fi;
-                           
-                           end );
-                           
-      Add( list, current_list );
-      
-    od;
-      
-return list;
-    
-end );
-
-##
-InstallMethod( RaysInFaces,
-               " for cones",
-               [ IsCone ],
-               
-  function( cone )
-  local external_cone, list_of_faces, generating_rays, list, current_cone, current_list, current_ray_generators, i,j;  
-  
-    external_cone := Cdd_H_Rep( ExternalCddCone ( cone ) );
-    
-    list_of_faces:= Cdd_Faces( external_cone );
-    
-    generating_rays:= RayGenerators( cone );
-    
-    list:= [ ];
-    
-    for i in list_of_faces do
-      
-      if i[ 1 ] <> 0 then
-        
-        current_cone := Cdd_ExtendLinearity( external_cone, i[ 2 ] );
-       
-        current_ray_generators := Cdd_GeneratingRays( current_cone ) ;
-            
-        current_list:= List( [ 1 .. Length( generating_rays ) ], 
-        
-                                function(j)
-
-                                  if generating_rays[j] in Cone( current_cone ) then
-                                        return 1;                        
-                                  else
-                                        return 0;
-                                  fi;
-                                
-                                end );
-
-        Add( list, current_list );
-
-      fi;
-
-   od;
-
-return list;
-
-end );
-
-##
 InstallMethod( Facets,
                "for external cones",
                [ IsCone ],
@@ -666,21 +431,6 @@ InstallMethod( FacesOfCone,
 end );
 
 ##
-InstallMethod( FVector,
-               "for cones",
-               [ IsCone ],
-  function( cone )
-    local external_cone, faces;
-
-    external_cone := Cdd_H_Rep( ExternalCddCone( cone ) );
-  
-    faces := Cdd_Faces( external_cone );
-
-    return List( [ 1 .. Dimension( cone ) ], 
-                i -> Length( PositionsProperty( faces, face -> face[ 1 ] = i ) ) );
-  end );
-
-##
 InstallMethod( LinearSubspaceGenerators,
                [ IsCone ],
                
@@ -691,7 +441,7 @@ InstallMethod( LinearSubspaceGenerators,
   
   basis := NullspaceMat( TransposedMat( inequalities ) );
   
-  new_basis := List( basis, i-> LcmOfDenominatorRatInList( i )*i  );
+  new_basis := List( basis, list -> Lcm( List( [ 1 .. Length( list ) ], i-> DenominatorRat( list[ i ] ) ) ) * list );
   
   return  new_basis;
    
@@ -856,7 +606,6 @@ InstallMethod( StarSubdivisionOfIthMaximalCone,
     return maxcones;
     
 end );
-
 
 ##
 InstallMethod( StarFan,
@@ -1026,30 +775,6 @@ InstallMethod( IntersectionOfCones,
     inequalities := Unique( Concatenation( [ NonReducedInequalities( cone1 ), NonReducedInequalities( cone2 ) ]  ) );
     
     cone := ConeByInequalities( inequalities );
-    
-    SetContainingGrid( cone, ContainingGrid( cone1 ) );
-    
-    return cone;
-    
-end );
-
-##
-InstallMethod( IntersectionOfCones,
-               "for homalg cones",
-               [ IsCone, IsCone ],
-               
-  function( cone1, cone2 )
-    local cone, ext_cone;
-    
-    if not Rank( ContainingGrid( cone1 ) )= Rank( ContainingGrid( cone2 ) ) then
-        
-        Error( "cones are not from the same grid" );
-        
-    fi;
-    
-    ext_cone := Cdd_Intersection( ExternalCddCone( cone1), ExternalCddCone( cone2 ) );
-    
-    cone := Cone( ext_cone );
     
     SetContainingGrid( cone, ContainingGrid( cone1 ) );
     
@@ -1260,151 +985,7 @@ InstallMethod( IsRelativeInteriorRay,
     
     return ForAll( ineq, i -> i > 0 ) and ForAll( equations, i -> i = 0 );
     
-end );
-
-
-#######################################
-##
-## Methods to construct external cones
-##
-#######################################
-
-InstallMethod( ExternalCddCone, 
-               [ IsCone ], 
-               
-   function( cone )
-   
-   local list, new_list, number_of_equalities, linearity, i, u ;
-   
-   new_list:= [ ];
-   if IsBound( cone!.input_rays ) and Length( cone!.input_rays )= 1 and IsZero( cone!.input_rays ) then
-   
-      new_list:= [ Concatenation( [ 1 ], cone!.input_rays[ 1 ] ) ];
-      
-      return Cdd_PolyhedronByGenerators( new_list );
-      
-   fi;
-   
-   if IsBound( cone!.input_rays ) then 
-   
-      list := cone!.input_rays;
-      
-      for i in [1..Length( list ) ] do 
-          
-          u:= ShallowCopy( list[ i ] );
-          
-          Add( u, 0, 1 );
-          
-          Add( new_list, u );
-      
-      od;
-      
-      return Cdd_PolyhedronByGenerators( new_list );
-   
-   fi;
-   
-   
-   if IsBound( cone!.input_equalities ) then
-   
-      list := StructuralCopy( cone!.input_equalities );
-      
-      number_of_equalities:= Length( list );
-      
-      linearity := [1..number_of_equalities];
-      
-      Append( list, StructuralCopy( cone!.input_inequalities ) );
-      
-      for i in [1..Length( list ) ] do 
-      
-          u:= ShallowCopy( list[ i ] );
-          
-          Add( u, 0, 1 );
-          
-          Add( new_list, u );
-      
-      od;
-      
-      return Cdd_PolyhedronByInequalities( new_list, linearity );
-   
-   else 
-   
-      list:= StructuralCopy( cone!.input_inequalities );
-      
-      for i in [1..Length( list ) ] do 
-          
-          u:= ShallowCopy( list[ i ] );
-          
-          Add( u, 0, 1 );
-          
-          Add( new_list, u );
-          
-      od;
-      
-      return Cdd_PolyhedronByInequalities( new_list );
-   
-   fi;
-   
-end );
-   
-      
-InstallMethod( ExternalNmzCone, 
-              [ IsCone ],
-  function( cone )
-  local a, list, equalities, i;
-  
-  list:= [];
-   
-   if IsBound( cone!.input_rays ) then 
-   
-        list := StructuralCopy( cone!.input_rays );
-        
-        if ForAll( Concatenation( list ), IsInt ) then
-
-            return ValueGlobal( "NmzCone" )( [ "integral_closure", list ] );
-        
-        else
-
-            a := DuplicateFreeList( List( Concatenation( list ), l -> DenominatorRat( l ) ) );
-            
-            list := Lcm( a ) * list;
-
-            return ValueGlobal( "NmzCone" )( [ "integral_closure", list ] );
-
-        fi;
-
-   fi;
-   
-   list:= StructuralCopy( cone!.input_inequalities );
-   
-   if IsBound( cone!.input_equalities ) then
-      
-      equalities:= StructuralCopy( cone!.input_equalities );
-      
-      for i in equalities do
-      
-          Append( list, [ i, -i ] );
-          
-      od;
-      
-   fi;
-      
-    if ForAll( Concatenation( list ), IsInt ) then
-
-        return ValueGlobal( "NmzCone" )( ["inequalities", list ] );
-        
-    else
-
-        a := DuplicateFreeList( List( Concatenation( list ), l -> DenominatorRat( l ) ) );
-            
-        list := Lcm( a ) * list;
-
-        return ValueGlobal( "NmzCone" )( ["inequalities", list ] );
-
-    fi;
-
-    Error( "The cone should be defined by vertices or inequalities!" );
-    
-end );
+end );   
 
 #####################################
 ##
@@ -1544,63 +1125,7 @@ InstallMethod( Cone,
                   
       ConeByGenerators
 
-    );
-   
-InstallMethod( Cone, 
-              "Construct cone from Cdd cone",
-              [ IsCddPolyhedron ],
-              
-   function( cdd_cone )
-   local inequalities, equalities, 
-         new_inequalities, new_equalities, u, i;
-   
-   if cdd_cone!.rep_type = "H-rep" then 
-       
-           inequalities:= Cdd_Inequalities( cdd_cone );
-           
-           new_inequalities:= [ ];
-           
-           for i in inequalities do 
-                
-                 u:= ShallowCopy( i );
-                
-                 Remove( u , 1 );
-                
-                 Add(new_inequalities, u );
-               
-           od;
-           
-           if cdd_cone!.linearity <> [] then
-               
-                 equalities:= Cdd_Equalities( cdd_cone );
-                 
-                 new_equalities:= [ ];
-                 
-                 for i in equalities do 
-                    
-                     u:= ShallowCopy( i );
-                     
-                     Remove( u , 1 );
-                     
-                     Add(new_equalities, u );
-                    
-                 od;
-                 
-                 return ConeByEqualitiesAndInequalities( new_equalities, new_inequalities);
-                 
-           fi;
-           
-           return ConeByInequalities( new_inequalities );
-           
-    else 
-    
-           return ConeByGenerators( Cdd_GeneratingRays( cdd_cone ) );
-           
-    fi;
-    
-end );
-   
-
+    );   
 
 ################################
 ##

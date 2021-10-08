@@ -46,13 +46,6 @@ DeclareOperation( "ConeByGenerators",
 DeclareOperation( "Cone",
                   [ IsList ] );
 
-#! @Arguments cdd_cone 
-#! @Returns a <C>Cone</C> Object
-#! @Description  
-#! This function takes a cone defined in **CddInterface** and converts it to a cone in **NConvex**
-DeclareOperation( "Cone",
-                  [ IsCddPolyhedron ] );
-
 ##############################
 ##
 ##  Attributes 
@@ -151,20 +144,6 @@ DeclareAttribute( "LinearSubspaceGenerators", IsCone );
 #! @Description  
 #! Returns a basis of the lineality space of the cone <C>C</C>.
 DeclareAttribute( "LinealitySpaceGenerators", IsCone );
-
-#! @Arguments C 
-#! @Returns a cdd object
-#! @Description  
-#! Converts the cone to a cdd object. The operations of CddInterface can then be applied
-#! on this convex object.
-DeclareAttribute( "ExternalCddCone",  IsCone  );
-
-#! @Arguments C 
-#! @Returns an normaliz object
-#! @Description  
-#! Converts the cone to a normaliz object. The operations of NormalizInterface can then be applied
-#! on this convex object.
-DeclareAttribute( "ExternalNmzCone",  IsCone );
 
 if false then
   #! @Arguments C

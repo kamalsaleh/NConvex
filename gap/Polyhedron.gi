@@ -24,8 +24,7 @@ BindGlobal( "TheFamilyOfPolyhedrons",
 BindGlobal( "TheTypeConvexPolyhedron",
         NewType( TheFamilyOfPolyhedrons,
                  IsPolyhedron and IsConvexPolyhedronRep ) );
-                 
-                 
+                                 
 #####################################
 ##
 ## Structural Elements
@@ -52,131 +51,6 @@ InstallMethod( ContainingGrid,
 end );
 
 ##
-InstallMethod( ExternalCddPolyhedron,
-               "for polyhedrons",
-               [ IsPolyhedron and HasMainRatPolytope and HasTailCone ],
-               
-  function( polyhedron )
-    local verts, rays;
-    
-    verts := Vertices( MainRatPolytope( polyhedron ) );
-    
-    verts := List( verts, i -> Concatenation( [ 1 ], i ) );
-    
-    rays := RayGenerators( TailCone( polyhedron ) );
-    
-    rays := List( rays, i -> Concatenation( [ 0 ], i ) );
-    
-    polyhedron := Concatenation( rays, verts );
-    
-    polyhedron := Cdd_PolyhedronByGenerators( polyhedron );
-    
-    return polyhedron;
-    
-end );
-
-##
-InstallMethod( ExternalCddPolyhedron,
-               "for polyhedrons",
-               [ IsPolyhedron and HasHomogeneousPointsOfPolyhedron ],
-               
-  function( polyhedron )
-    
-    return Cdd_PolyhedronByGenerators( HomogeneousPointsOfPolyhedron( polyhedron ) );
-    
-end );
-
-##
-InstallMethod( InteriorPoint,
-                [ IsConvexObject and IsPolyhedron ],
-    function( poly )
-    return Cdd_InteriorPoint( ExternalCddPolyhedron( poly ) );
-end );
-
-##
-InstallMethod( DefiningInequalities, 
-               " for polyhedrons",
-               [ IsPolyhedron ], 
-               
-   function( polyhedron )
-   local ineq, eq, ex, d;
-   
-   ex:= ExternalCddPolyhedron( polyhedron );
-   
-   ineq := Cdd_Inequalities( ex );
-   eq   := Cdd_Equalities( ex );
-   
-   d:= Concatenation( ineq, eq, -eq );
-   
-   return d;
- 
-end );
-   
-
-##
-InstallMethod( ExternalCddPolyhedron,
-               "for polyhedrons with inequalities",
-               [ IsPolyhedron ],
-               
-  function( polyhedron )
-    
-    if IsBound( polyhedron!.inequalities ) then
-        
-        if IsEmpty( polyhedron!.inequalities ) then
-            
-            polyhedron!.inequalities := [ [ 0 ] ];
-            
-        fi;
-        
-        return Cdd_PolyhedronByInequalities( polyhedron!.inequalities );
-        
-    fi;
-    
-    TryNextMethod();
-    
-end );
-
-InstallMethod( ExternalNmzPolyhedron, 
-               [ IsPolyhedron ], 
-               
-function( poly )
-local ineq, new_ineq;
-
-if IsBound( poly!.inequalities ) then 
-
-     ineq:= poly!.inequalities;
-     
-fi;
-
-ineq:= DefiningInequalities( poly );
-
-new_ineq := List( ineq, function( i )
-                        local j;
-                        
-                        j:= ShallowCopy( i );
-
-                        Add( j, j[ 1 ] );
-                        
-                        Remove(j ,1 );
-                        
-                        return j;
-                        
-                        end );
-
-return ValueGlobal( "NmzCone" )( [ "inhom_inequalities", new_ineq ] );
-
-end );
-                        
-                        
-
-InstallMethod( Dimension, 
-               [ IsPolyhedron ], 
-   function( polyhedron )
-   
-   return Cdd_Dimension( ExternalCddPolyhedron( polyhedron ) );
-   
-end );
-
 InstallMethod( MainRatPolytope, 
                "for polyhedrons",
                [ IsPolyhedron ],
@@ -226,36 +100,6 @@ InstallMethod( VerticesOfMainPolytope,
 end );
 
 ##
-InstallMethod( VerticesOfMainRatPolytope,
-               "for polyhedrons",
-               [ IsPolyhedron ],
-               
-  function( polyhedron )
-    local v;
-    
-    if IsBound( polyhedron!.inequalities ) then 
-    
-        v:= Cdd_GeneratingVertices( ExternalCddPolyhedron( polyhedron ) );
-
-        if Length( v ) > 0 then 
-        
-               return v;
-               
-        else 
-        
-               return [ ListWithIdenticalEntries(AmbientSpaceDimension( polyhedron ), 0 ) ];
-               
-        fi;
-        
-        
-    else 
-    
-        return Vertices( MainRatPolytope( polyhedron ) );
-        
-    fi;
-    
-end );
-
 InstallMethod( TailCone,
                "for polyhedrons",
                [ IsPolyhedron ],
@@ -273,25 +117,6 @@ InstallMethod( TailCone,
    
   fi;
   
-end );
-
-##
-InstallMethod( RayGeneratorsOfTailCone,
-               "for polyhedrons",
-               [ IsPolyhedron ],
-               
-  function( polyhedron )
-    
-     if IsBound( polyhedron!.inequalities ) then 
-    
-        return Cdd_GeneratingRays( ExternalCddPolyhedron( polyhedron ) );
-
-     else
-       
-        return RayGenerators( TailCone( polyhedron ) );
-        
-     fi;
-    
 end );
 
 ##
@@ -315,82 +140,6 @@ InstallMethod( HomogeneousPointsOfPolyhedron,
     return polyhedron;
     
 end );
-
-
-InstallMethod( LatticePointsGenerators, 
-                 [ IsPolyhedron ], 
-                 
-  function( p )
-    local external_poly,nmz_points_in_main_polytope, points_in_main_polytope, 
-                       nmz_hilbert_basis, hilbert_basis, nmz_lineality, lineality, ineq, const;
-    
-    if IsPackageMarkedForLoading( "NormalizInterface", ">=1.1.0" ) then
-
-      external_poly:= ExternalNmzPolyhedron( p );
-
-      nmz_points_in_main_polytope:= ValueGlobal( "NmzModuleGenerators" )( external_poly ); 
-
-      points_in_main_polytope:= 
-        List( nmz_points_in_main_polytope ,
-          function( i ) 
-            local j;
-                       
-            j := ShallowCopy( i );
-                       
-            Remove( j, Length( i ) );
-                       
-            return j;
-                       
-          end );
-                                          
-      nmz_hilbert_basis:= ValueGlobal( "NmzHilbertBasis" )( external_poly );
-     
-      hilbert_basis :=                
-        List( nmz_hilbert_basis ,
-          function( i ) 
-            local j;
-                             
-            j := ShallowCopy( i );
-                             
-            Remove( j, Length( i ) );
-                             
-            return j;
-                             
-          end );
-      
-      nmz_lineality := ValueGlobal( "NmzMaximalSubspace" )( external_poly );
-     
-      lineality:= List( nmz_lineality, 
-        function( i )
-          local j;
-                                   
-          j := ShallowCopy( i );
-                                   
-          Remove( j, Length( i ) );
-                                   
-          return j;
-                                   
-        end );
-
-      return [ Set( points_in_main_polytope ), Set( hilbert_basis ), Set( lineality ) ];
-    
-    elif IsPackageMarkedForLoading( "4ti2Interface", ">=2018.07.06" ) then
-     
-     ineq := TransposedMat( DefiningInequalities( p ) );
-
-     const := -ineq[ 1 ];
-
-     ineq := TransposedMat( ineq{ [ 2 .. Length( ineq ) ] } );
-
-     return List( ValueGlobal( "4ti2Interface_zsolve_equalities_and_inequalities" )( [  ], [  ], ineq, const : precision := "gmp" ), Set );
-
-    else
-
-      Error( "4ti2Interface or NormalizInterface should be loaded!" );
-
-    fi;
-    
-end );
     
 ##
 InstallMethod( BasisOfLinealitySpace,
@@ -403,21 +152,6 @@ InstallMethod( BasisOfLinealitySpace,
     
 end );
 
-##
-InstallMethod( FVector,
-            [ IsPolyhedron ],
-    function( polyhedron )
-      local external_polyhedron, faces;
-      
-      external_polyhedron := Cdd_H_Rep( ExternalCddPolyhedron( polyhedron ) );
-      
-      faces := Cdd_Faces( external_polyhedron );
-      
-      return List( [ 0 .. Dimension( polyhedron ) - 1 ], 
-                i -> Length( PositionsProperty( faces, face -> face[ 1 ] = i ) ) );
-
-end );
-
 #####################################
 ##
 ##  Properties
@@ -425,34 +159,13 @@ end );
 #####################################
 
 ##
-InstallMethod( IsBounded,
-               " for external polytopes.",
-               [ IsPolyhedron ],
-               
-  function( polyhedron )
-
-  return Length( Cdd_GeneratingRays( ExternalCddPolyhedron( polyhedron ) ) ) = 0;
-  
-end );
-
-##
-InstallMethod( IsNotEmpty,
-               " for external polytopes.",
-               [ IsPolyhedron ],
-               
-  function( polyhedron )
-
-  return not Cdd_IsEmpty( ExternalCddPolyhedron( polyhedron ) );
-  
-end );
-
 InstallMethod( IsPointed,
-               [ IsPolyhedron ], 
+               [ IsPolyhedron ],
+               
+    function( polyhedron )
       
-  function( polyhedron )
-  
-  return IsPointed( TailCone( polyhedron ) );
-  
+      return IsPointed( TailCone( polyhedron ) );
+      
 end );
 
 #####################################
@@ -622,38 +335,6 @@ InstallMethod( Polyhedron,
     
 end );
 
-## Solving linear programs
-##
-BindGlobal( "SOLVE_LINEAR_PROGRAM_USING_CDD",
-  function( P, max_or_min, target_func, constructor )
-    local ext_cdd_poly, cdd_linear_program; 
-    
-    ext_cdd_poly := constructor( P );
-    
-    cdd_linear_program := Cdd_LinearProgram( ext_cdd_poly, max_or_min, target_func );
-    
-    return Cdd_SolveLinearProgram( cdd_linear_program );
-
-end );
-
-##
-InstallMethod( SolveLinearProgram,
-  [ IsPolyhedron, IsString, IsList ],
-  function( P, max_or_min, target_func )
-    
-    return SOLVE_LINEAR_PROGRAM_USING_CDD( P, max_or_min, target_func, ExternalCddPolyhedron );
-
-end );
-
-##
-InstallMethod( SolveLinearProgram,
-  [ IsPolytope, IsString, IsList ],
-  function( P, max_or_min, target_func )
-    
-    return SOLVE_LINEAR_PROGRAM_USING_CDD( P, max_or_min, target_func, ExternalCddPolytope );
-
-end );
- 
 ##############################
 ##
 ## View & Display

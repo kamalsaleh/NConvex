@@ -25,7 +25,7 @@ DeclareRepresentation( "IsInternalConvexObjectRep",
                      );
 
 #! @Chapter Introduction
-#! The $\textbf{NConvex}$ package is a GAP package. Its aim is to carry out polyhedral constructions and computations, namely computing properties and attributes of cones, polyhedrons, polytopes and fans.
+#! The $\textbf{NConvex}$ package is a &GAP; package. Its aim is to carry out polyhedral constructions and computations, namely computing properties and attributes of cones, polyhedrons, polytopes and fans.
 #! Its has been written to provide the needed tools for the package \textbf{ToricVarieties}. All written as part of the homalg-project.
 #! 
 #! @Section Installation
@@ -37,7 +37,7 @@ DeclareRepresentation( "IsInternalConvexObjectRep",
 #! in the pkg directory of the Gap installation or your local directory for Gap packages.
 #! @EndLatexOnly
 #!
-#! @Section Requirements
+#! @Section Requirements [to-be-updated]
 #! Here is a list of the required Gap packages:
 #! @BeginLatexOnly
 #! \begin{itemize}
@@ -60,8 +60,6 @@ DeclareRepresentation( "IsInternalConvexObjectRep",
 #! \begin{center}
 #!  \url{https://github.com/gap-packages/NormalizInterface.git}
 #! \end{center}
-#! \item In case \textbf{NormalizInterface} is not available, 
-#! then you can use the Gap/homalg package \textbf{4ti2Interface}.
 #! It is already included in the \textbf{homalg\textunderscore project}.
 #! Make sure to accordingly change the dependencies entry in PackageInfo.g
 #! \end{itemize}

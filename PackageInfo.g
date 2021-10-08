@@ -10,7 +10,7 @@ SetPackageInfo( rec(
 
 PackageName := "NConvex",
 Subtitle := "A Gap package to perform polyhedral computations",
-Version := "2020.11-04",
+Version := "2021.10-01",
 Date := ~.Version{[ 1 .. 10 ]},
 Date := Concatenation( "01/", ~.Version{[ 6, 7 ]}, "/", ~.Version{[ 1 .. 4 ]} ),
 License := "GPL-2.0-or-later",
@@ -92,11 +92,11 @@ PackageDoc := rec(
 Dependencies := rec(
   GAP := ">= 4.9",
   NeededOtherPackages := [ [ "AutoDoc", ">= 2018.02.14" ],
-                           [ "Modules", ">= 0.5" ], 
-                           [ "CddInterface", ">= 2020.06.24" ],
-                           [ "NormalizInterface", ">= 1.1.0"  ]
+                           [ "Modules", ">= 0.5" ] 
                          ],
-  SuggestedOtherPackages := [ [ "4ti2Interface", ">= 2018.07.06" ],
+  SuggestedOtherPackages := [ [ "NormalizInterface", ">= 1.1.0" ],
+                              [ "CddInterface", "2020.06.24" ],
+                              [ "4ti2Interface", ">= 2018.07.06" ],
                               [ "TopcomInterface", ">=2019.06.15" ] ],
   ExternalConditions := [ ],
 ),

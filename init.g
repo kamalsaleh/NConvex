@@ -10,3 +10,8 @@ ReadPackage( "NConvex", "gap/Cone.gd" );
 ReadPackage( "NConvex", "gap/Polytope.gd" );
 ReadPackage( "NConvex", "gap/Polyhedron.gd" );
 ReadPackage( "NConvex", "gap/ZSolve.gd" );
+
+if IsPackageMarkedForLoading( "CddInterface", ">= 2020.06.24" ) and
+    IsPackageMarkedForLoading( "NormalizInterface", ">= 1.1.0" ) then
+    ReadPackage( "NConvex", "gap/InterfaceToCddNmz.gd" );
+fi;
